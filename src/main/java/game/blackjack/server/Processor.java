@@ -28,11 +28,11 @@ public class Processor implements Runnable {
         try {
             out = new PrintWriter(socket.getOutputStream(), true);
             in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+            System.out.println("Client connected");
 
             String inputLine, outputLine;
             Protocol protocol = new Protocol();
-            outputLine = protocol.processInput(null);
-            out.println(outputLine);
+            out.println("hello");
 
             while ((inputLine = in.readLine()) != null) {
                 outputLine = protocol.processInput(inputLine);
@@ -61,4 +61,5 @@ public class Processor implements Runnable {
             }
         }
     }
+
 }

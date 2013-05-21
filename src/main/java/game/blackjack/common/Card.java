@@ -68,4 +68,12 @@ public class Card {
         return deck;
     }
 
+    public static int calculateTotal(List<Card> hand) {
+        int i = 0;
+        for (Card card : hand) {
+            i += card.getNumber().weight;
+        }
+        return i;
+    }
+
 }
