@@ -1,11 +1,9 @@
 package game.blackjack.server;
 
-import game.blackjack.common.Protocol;
+import game.blackjack.common.Answer;
+import game.blackjack.common.Game;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
+import java.io.*;
 import java.net.Socket;
 
 /**
@@ -23,29 +21,38 @@ public class Processor implements Runnable {
 
     @Override
     public void run() {
-        PrintWriter out = null;
+        ObjectOutputStream out = null;
         BufferedReader in = null;
         try {
-            out = new PrintWriter(socket.getOutputStream(), true);
+            out = new ObjectOutputStream(socket.getOutputStream());
             in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             System.out.println("Client connected");
 
-            String inputLine, outputLine;
-            Protocol protocol = new Protocol();
-            out.println("hello");
+            String inputLine;
+            Game game = new Game();
+            Answer answer = new Answer(game);
+            out.writeObject(answer);
+            out.flush();
 
             while ((inputLine = in.readLine()) != null) {
-                outputLine = protocol.processInput(inputLine);
-                out.println(outputLine);
-                if (outputLine.equalsIgnoreCase("by"))
+                answer = game.processInput(inputLine);
+                out.writeObject(answer);
+                out.flush();
+                System.out.println(answer);
+                if (game.getState() == GameState.FINISH) {
                     break;
+                }
             }
 
         } catch (IOException e) {
             e.printStackTrace();
         } finally {
             if (out != null) {
-                out.close();
+                try {
+                    out.close();
+                } catch (IOException e) {
+                    System.out.println("Output stream couldn't be closed");
+                }
             }
             if (in != null) {
                 try {

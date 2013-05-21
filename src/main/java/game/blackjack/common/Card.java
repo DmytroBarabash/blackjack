@@ -1,5 +1,6 @@
 package game.blackjack.common;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -9,7 +10,7 @@ import java.util.List;
  * User: Dmytro Barabash
  * 2013-05-21 00:08
  */
-public class Card {
+public class Card implements Serializable {
 
     private final Suit suit;
     private final Number number;

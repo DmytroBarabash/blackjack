@@ -2,7 +2,7 @@ package game.blackjack.common;
 
 public enum Turn {
 
-    HIT("h"), STAND("s"), DOUBLE("d");
+    HIT("h"), STAND("s"), DOUBLE("d"), OTHER("");
 
     public final String code;
 
@@ -16,7 +16,7 @@ public enum Turn {
                 return turn;
             }
         }
-        return null;
+        return OTHER;
     }
 
 }
