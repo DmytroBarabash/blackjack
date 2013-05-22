@@ -7,24 +7,26 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Created with IntelliJ IDEA.
- * User: Dmytro Barabash
- * 2013-05-21 22:14
+ * Class to transport server response
  */
 public class Answer implements Serializable {
+
+    private static final long serialVersionUID = -686041796553415756L;
 
     private GameState state;
     private int bet;
     private List<Card> hand;
     private List<Card> dealerHand;
     private String errorMessage;
+    private Result result;
 
-    public Answer(Game game){
+    public Answer(Game game) {
         state = game.getState();
         bet = game.getBet();
         hand = new ArrayList<Card>(game.getHand());
         dealerHand = new ArrayList<Card>(game.getDealerHand());
-        errorMessage = game.getErrorMessage();
+        errorMessage = game.removeErrorMessage();
+        result = game.getResult();
     }
 
     @Override
@@ -50,6 +52,10 @@ public class Answer implements Serializable {
 
     public String getErrorMessage() {
         return errorMessage;
+    }
+
+    public Result getResult() {
+        return result;
     }
 
 }

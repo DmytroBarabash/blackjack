@@ -1,6 +1,7 @@
 package game.blackjack.client;
 
 import game.blackjack.common.Answer;
+import game.blackjack.common.Constants;
 
 import java.io.*;
 import java.net.Socket;
@@ -8,17 +9,32 @@ import java.net.Socket;
 public class Client {
 
     public static void main(String[] args) throws IOException, ClassNotFoundException {
-        Socket socket = new Socket("localhost", 9090);
+        String host = Constants.DEFAULT_HOST;
+        int port = Constants.DEFAULT_PORT;
+        if (args.length > 0) {
+            host = args[0];
+        }
+        if (args.length > 1) {
+            try {
+                port = Integer.parseInt(args[1]);
+            } catch (NumberFormatException ex) {
+                System.out.println("Bad port number " + args[1]);
+                System.exit(-1);
+            }
+        }
+
+        Socket socket = new Socket(host, port);
 
         PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
-        //BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
         ObjectInputStream in = new ObjectInputStream(socket.getInputStream());
         BufferedReader stdIn = new BufferedReader(new InputStreamReader(System.in));
 
         String fromUser;
         Answer answer;
         while ((answer = (Answer) in.readObject()) != null) {
-            System.out.println("Server: " + answer);
+            if (answer.getErrorMessage() != null) {
+                System.out.println("Warning! " + answer.getErrorMessage());
+            }
             switch (answer.getState()) {
                 case START: {
                     System.out.println("Enter your bet:");
@@ -38,12 +54,33 @@ public class Client {
                     break;
                 }
                 case FINISH: {
-                    System.out.println("Fin");
                     System.out.println("Your hand: " + answer.getHand());
                     System.out.println("Dealer's hand: " + answer.getDealerHand());
+                    int bet = answer.getBet();
+                    if (bet > 0) {
+                        System.out.println("Your bet is " + bet);
+                    }
+                    switch (answer.getResult()) {
+                        case DRAW: {
+                            System.out.println("Draw");
+                            break;
+                        }
+                        case WON:
+                        case LOSE: {
+                            System.out.println("You " + answer.getResult().toString().toLowerCase());
+                            break;
+                        }
+                        case UNDEFINED: {
+                            System.out.println("Something is wrong");
+                        }
+                    }
+                    out.close();
+                    in.close();
+                    return;
                 }
             }
         }
+
     }
 
 }

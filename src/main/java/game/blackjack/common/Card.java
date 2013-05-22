@@ -5,12 +5,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-/**
- * Created with IntelliJ IDEA.
- * User: Dmytro Barabash
- * 2013-05-21 00:08
- */
 public class Card implements Serializable {
+
+    private static final long serialVersionUID = -3325801014496821463L;
 
     private final Suit suit;
     private final Number number;

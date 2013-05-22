@@ -6,11 +6,16 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static game.blackjack.server.GameState.*;
+import static game.blackjack.common.Result.*;
 
 /**
  * Created with IntelliJ IDEA.
  * User: Dmytro Barabash
  * 2013-05-21 01:30
+ */
+
+/**
+ *
  */
 public class Game {
 
@@ -21,9 +26,11 @@ public class Game {
     private List<Card> hand;
     private List<Card> dealerHand;
     private String errorMessage;
+    private Result result;
 
-    public Game() {
+    {
         state = START;
+        result = UNDEFINED;
         hand = new ArrayList<Card>();
         dealerHand = new ArrayList<Card>();
         giveCard(dealerHand);
@@ -36,19 +43,35 @@ public class Game {
         return card;
     }
 
-    private String playDealer(int total) {
-        int dealerTotal;
-        while ((dealerTotal = Card.calculateTotal(dealerHand)) < 17) {
+    private void chooseWinner() {
+        int total = Card.calculateTotal(hand);
+        if (total > Constants.TWENTY_ONE) {
+            result = LOSE;
+            bet = 0;
+            return;
+        }
+
+        while (Card.calculateTotal(dealerHand) < 17) {
             giveCard(dealerHand);
         }
+        int dealerTotal = Card.calculateTotal(dealerHand);
         if (dealerTotal > Constants.TWENTY_ONE) {
-            return " you won " + bet * 2;
+            result = WON;
+            bet = bet * 2;
         } else if (dealerTotal == Constants.TWENTY_ONE && total == Constants.TWENTY_ONE) {
-            return " no winner";
+            result = DRAW;
+        } else if (dealerTotal == Constants.TWENTY_ONE) {
+            result = LOSE;
+            bet = 0;
+        } else if (total == Constants.TWENTY_ONE){
+            result = WON;
+            bet = bet + bet % 2 * 3;
         } else if (total > dealerTotal) {
-            return " you won " + bet * 2;
+            result = WON;
+            bet = bet * 2;
         } else {
-            return " dealer won";
+            result = LOSE;
+            bet = 0;
         }
     }
 
@@ -76,23 +99,22 @@ public class Game {
                     case HIT: {
                         giveCard(hand);
                         int total = Card.calculateTotal(hand);
-                        if (total == Constants.TWENTY_ONE) {
+                        if (total >= Constants.TWENTY_ONE) {
                             state = FINISH;
-                            System.out.println(playDealer(total));
-                        } else if (total > Constants.TWENTY_ONE) {
-                            state = FINISH;
+                            chooseWinner();
                         }
                         break;
                     }
                     case STAND: {
                         state = FINISH;
-                        int total = Card.calculateTotal(hand);
-                        System.out.println(playDealer(total));
+                        chooseWinner();
                         break;
                     }
                     case DOUBLE: {
                         state = FINISH;
-                        errorMessage = "not implemented";
+                        bet = bet * 2;
+                        giveCard(hand);
+                        chooseWinner();
                         break;
                     }
                     default: {
@@ -102,11 +124,8 @@ public class Game {
                 }
                 break;
             }
-            case FINISH: {
-                break;
-            }
             default: {
-                errorMessage = "unknown state";
+                errorMessage = "wrong state";
             }
         }
         return new Answer(this);
@@ -128,8 +147,14 @@ public class Game {
         return dealerHand;
     }
 
-    public String getErrorMessage() {
-        return errorMessage;
+    public String removeErrorMessage() {
+        String tmp = errorMessage;
+        errorMessage = null;
+        return tmp;
+    }
+
+    public Result getResult() {
+        return result;
     }
 
 }
